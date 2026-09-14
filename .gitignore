@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.log
+.env
+local.db
+local.db-*
+drizzle/
+.DS_Store

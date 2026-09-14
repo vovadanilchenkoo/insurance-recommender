@@ -1,0 +1,29 @@
+{
+  "name": "insurance-recommender",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Прототип рекомендаційного модуля вебзастосунку «Допомога у виборі програми ДМС» — магістерська робота",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/server.ts",
+    "start": "bun src/server.ts",
+    "db:push": "bun --env-file=.env drizzle-kit push",
+    "db:generate": "bun --env-file=.env drizzle-kit generate",
+    "seed": "bun --env-file=.env run src/db/seed.ts",
+    "test": "bun test",
+    "benchmark": "bun --env-file=.env run tests/benchmark.ts"
+  },
+  "dependencies": {
+    "@orpc/client": "^1.14.7",
+    "@orpc/server": "^1.14.7",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12.10",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@libsql/client": "^0.18.0",
+    "@types/bun": "latest",
+    "drizzle-kit": "^0.31.10",
+    "typescript": "^5.7.0"
+  }
+}
