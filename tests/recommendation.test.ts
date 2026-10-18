@@ -7,42 +7,42 @@ const catalog: InsuranceProductInput[] = [
   {
     id: 1, company: "A", productName: "Cheap Ambulatory", programType: "ambulatory",
     minAge: 18, maxAge: 60, annualPrice: 3000, coverageLimit: 20000, deductible: 500,
-    networkSizeScore: 30, regions: ["Київ"], exclusions: [], waitingPeriodDays: 10, isActive: true,
+    networkSizeScore: 30, regions: ["Київ"], exclusions: [], waitingPeriodDays: 10, isActive: true, coverageComponents: [{coverageType: "ambulatory", limitAmount: 10000}],
   },
   {
     id: 2, company: "B", productName: "Premium Ambulatory", programType: "ambulatory",
     minAge: 18, maxAge: 60, annualPrice: 9000, coverageLimit: 80000, deductible: 0,
-    networkSizeScore: 90, regions: ["Київ"], exclusions: [], waitingPeriodDays: 5, isActive: true,
+    networkSizeScore: 90, regions: ["Київ"], exclusions: [], waitingPeriodDays: 5, isActive: true, coverageComponents: [{coverageType: "ambulatory", limitAmount: 10000}],
   },
   {
     id: 3, company: "C", productName: "Out of budget", programType: "ambulatory",
     minAge: 18, maxAge: 60, annualPrice: 50000, coverageLimit: 100000, deductible: 0,
-    networkSizeScore: 95, regions: ["Київ"], exclusions: [], waitingPeriodDays: 0, isActive: true,
+    networkSizeScore: 95, regions: ["Київ"], exclusions: [], waitingPeriodDays: 0, isActive: true, coverageComponents: [{coverageType: "ambulatory", limitAmount: 10000}],
   },
   {
     id: 4, company: "D", productName: "Wrong age range", programType: "ambulatory",
     minAge: 65, maxAge: 90, annualPrice: 4000, coverageLimit: 30000, deductible: 0,
-    networkSizeScore: 50, regions: ["Київ"], exclusions: [], waitingPeriodDays: 0, isActive: true,
+    networkSizeScore: 50, regions: ["Київ"], exclusions: [], waitingPeriodDays: 0, isActive: true, coverageComponents: [{coverageType: "ambulatory", limitAmount: 10000}],
   },
   {
     id: 5, company: "E", productName: "Wrong region", programType: "ambulatory",
     minAge: 18, maxAge: 60, annualPrice: 4000, coverageLimit: 30000, deductible: 0,
-    networkSizeScore: 50, regions: ["Львів"], exclusions: [], waitingPeriodDays: 0, isActive: true,
+    networkSizeScore: 50, regions: ["Львів"], exclusions: [], waitingPeriodDays: 0, isActive: true, coverageComponents: [{coverageType: "ambulatory", limitAmount: 10000}],
   },
   {
     id: 6, company: "F", productName: "Excludes chronic", programType: "ambulatory",
     minAge: 18, maxAge: 60, annualPrice: 4000, coverageLimit: 30000, deductible: 0,
-    networkSizeScore: 50, regions: ["Київ"], exclusions: ["хронічні захворювання"], waitingPeriodDays: 0, isActive: true,
+    networkSizeScore: 50, regions: ["Київ"], exclusions: ["хронічні захворювання"], waitingPeriodDays: 0, isActive: true, coverageComponents: [{coverageType: "ambulatory", limitAmount: 10000}],
   },
   {
     id: 7, company: "G", productName: "Complex covers all", programType: "complex",
     minAge: 18, maxAge: 60, annualPrice: 20000, coverageLimit: 200000, deductible: 1000,
-    networkSizeScore: 80, regions: ["nationwide"], exclusions: [], waitingPeriodDays: 30, isActive: true,
+    networkSizeScore: 80, regions: ["nationwide"], exclusions: [], waitingPeriodDays: 30, isActive: true, coverageComponents: [{coverageType: "ambulatory", limitAmount: 10000}],
   },
   {
     id: 8, company: "H", productName: "Inactive product", programType: "ambulatory",
     minAge: 18, maxAge: 60, annualPrice: 3500, coverageLimit: 25000, deductible: 0,
-    networkSizeScore: 60, regions: ["Київ"], exclusions: [], waitingPeriodDays: 0, isActive: false,
+    networkSizeScore: 60, regions: ["Київ"], exclusions: [], waitingPeriodDays: 0, isActive: false, coverageComponents: [{coverageType: "ambulatory", limitAmount: 10000}],
   },
 ];
 
@@ -80,7 +80,7 @@ describe("Жорсткі обмеження (hard constraints)", () => {
     expect(r.results.find((x) => x.product.id === 8)).toBeUndefined();
   });
 
-  test("продукт типу complex проходить фільтр для будь-якого запитаного типу", () => {
+  test("complex з підтвердженим амбулаторним компонентом проходить амбулаторний запит", () => {
     const r = recommend(catalog, { ...baseUser, maxBudget: 25000 });
     expect(r.results.find((x) => x.product.id === 7)).toBeDefined();
   });
@@ -149,7 +149,7 @@ describe("Механізм послаблення обмежень (relaxation)"
   });
 
   test("якщо запит зовсім неможливо задовольнити — повертається порожній результат з діагностикою", () => {
-    const user: UserProfile = { ...baseUser, age: 200, maxBudget: 1 };
+    const user: UserProfile = { ...baseUser, age: 100, maxBudget: 1 };
     const r = recommend(catalog, user);
     expect(r.results.length).toBe(0);
     expect(r.diagnostics.candidatesAfterFilter).toBe(0);

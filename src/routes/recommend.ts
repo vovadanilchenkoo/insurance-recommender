@@ -8,33 +8,17 @@ import {
   type InsuranceProductInput,
   type UserProfile,
 } from "../lib/recommendation";
-
-const userProfileSchema = z.object({
-  age: z.number().min(0).max(120),
-  region: z.string().min(1),
-  requiredProgramType: z.enum([
-    "ambulatory",
-    "stationary",
-    "complex",
-    "dental",
-    "maternity",
-  ]),
-  maxBudget: z.number().positive(),
-  minCoverageLimit: z.number().nonnegative().optional(),
-  specialNeeds: z.array(z.string()).optional(),
-  priorityWeights: z
-    .object({
-      coverage: z.number().optional(),
-      price: z.number().optional(),
-      network: z.number().optional(),
-      deductible: z.number().optional(),
-      waiting: z.number().optional(),
-    })
-    .optional(),
-});
+import { userProfileSchema, type CoverageKind } from "../lib/profile";
 
 async function loadCatalog(): Promise<InsuranceProductInput[]> {
   const rows = await db.select().from(schema.insuranceProducts);
+  const components = await db.select().from(schema.coverageComponents);
+  const byProduct = new Map<number, InsuranceProductInput["coverageComponents"]>();
+  for (const c of components) {
+    const group = byProduct.get(c.productId) ?? [];
+    group.push({ coverageType: c.coverageType as CoverageKind, limitAmount: c.limitAmount });
+    byProduct.set(c.productId, group);
+  }
   return rows.map((r) => ({
     id: r.id,
     company: r.company,
@@ -50,6 +34,7 @@ async function loadCatalog(): Promise<InsuranceProductInput[]> {
     exclusions: JSON.parse(r.exclusions) as string[],
     waitingPeriodDays: r.waitingPeriodDays,
     isActive: r.isActive,
+    coverageComponents: byProduct.get(r.id) ?? [],
   }));
 }
 
@@ -96,14 +81,5 @@ export const recommend = {
       return { product, components };
     }),
 
-  // Останні N запитів з журналу (для аналізу експериментів)
-  getRequestLog: base
-    .input(z.object({ limit: z.number().min(1).max(500).default(100) }))
-    .handler(async ({ input }) => {
-      const rows = await db
-        .select()
-        .from(schema.recommendationRequests)
-        .limit(input.limit);
-      return rows;
-    }),
+  // Журнал читається лише локально; публічну процедуру вилучено до появи авторизації.
 };

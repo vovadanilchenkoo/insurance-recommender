@@ -47,6 +47,8 @@ export const coverageComponents = sqliteTable("coverage_components", {
     .notNull()
     .references(() => insuranceProducts.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  // Структурований тип; legacy без типу не підтверджує покриття.
+  coverageType: text("coverage_type").notNull().default("unknown"),
   description: text("description").notNull().default(""),
   limitAmount: real("limit_amount").notNull().default(0),
 });
@@ -57,7 +59,7 @@ export const recommendationRequests = sqliteTable("recommendation_requests", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   // профіль користувача-заявника, як він надійшов у запиті (JSON)
   userProfileJson: text("user_profile_json").notNull(),
-  // повний ранжований список результатів разом з оцінками (JSON)
+  // стислий список productId/productName/score, не повний знімок результату
   resultJson: text("result_json").notNull(),
   // час виконання алгоритму ранжування, мс
   computeTimeMs: real("compute_time_ms").notNull(),
